@@ -26,8 +26,6 @@ class PastelkaApp : Application() {
             context = this,
             dao = database.wallpaperDao(),
             wallhavenApi = NetworkModule.wallhavenApi,
-            catApi = NetworkModule.catApi,
-            dogApi = NetworkModule.dogApi,
         )
     }
     val wallpaperApplier: WallpaperApplier by lazy {

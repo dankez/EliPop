@@ -3,19 +3,15 @@ package com.example.data.repository
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
-import android.util.Log
 import com.example.data.local.UserPreferences
 import com.example.data.local.WallpaperDao
 import com.example.data.local.WallpaperEntity
 import com.example.data.model.RotationPool
 import com.example.data.model.WallpaperCategory
 import com.example.data.model.WallpaperItem
-import com.example.data.remote.CatApi
-import com.example.data.remote.DogApi
 import com.example.data.remote.WallhavenApi
 import java.io.File
 import java.util.UUID
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -27,8 +23,6 @@ class WallpaperRepository(
     private val context: Context,
     private val dao: WallpaperDao,
     private val wallhavenApi: WallhavenApi,
-    private val catApi: CatApi,
-    private val dogApi: DogApi,
 ) {
     fun observeAllWallpapers(): Flow<List<WallpaperItem>> =
         dao.observeAll().map { list -> list.map { it.toDomain() } }
@@ -38,6 +32,7 @@ class WallpaperRepository(
 
     suspend fun ensureSeeded() {
         withContext(Dispatchers.IO) {
+            dao.deleteLegacyRandomPetWallpapers()
             val baseTime = System.currentTimeMillis()
             val bundledSeeds =
                 listOf(
@@ -221,52 +216,6 @@ class WallpaperRepository(
             }
         }
 
-        if (category == WallpaperCategory.PETS) {
-            coroutineScope {
-                val cats = async { fetchOptional("cat") { catApi.getRandomCats(limit = 6) } }
-                val dogs = async { fetchOptional("dog", dogApi::getRandomDogs) }
-
-                cats.await()?.forEachIndexed { idx, cat ->
-                    val id = "cat_${cat.id}"
-                    items +=
-                        WallpaperEntity(
-                            id = id,
-                            title = "Rozkošná mačička",
-                            category = WallpaperCategory.PETS.name,
-                            previewUrl = cat.url,
-                            fullImageUrl = cat.url,
-                            localFilePath = null,
-                            drawableName = null,
-                            isFavorite = id in favoriteIds,
-                            isUserUploaded = false,
-                            sourceLabel = "TheCatAPI Free",
-                            accentHex = "#FF80AB",
-                            createdAt = now - 20 - idx,
-                        )
-                }
-
-                dogs.await()?.message?.take(6)?.forEachIndexed { idx, url ->
-                    val slug = url.substringAfterLast('/').substringBefore('.')
-                    val id = "dog_${slug}_${url.hashCode()}"
-                    items +=
-                        WallpaperEntity(
-                            id = id,
-                            title = "Milé šteniatko",
-                            category = WallpaperCategory.PETS.name,
-                            previewUrl = url,
-                            fullImageUrl = url,
-                            localFilePath = null,
-                            drawableName = null,
-                            isFavorite = id in favoriteIds,
-                            isUserUploaded = false,
-                            sourceLabel = "DogCEO Free",
-                            accentHex = "#FFAB91",
-                            createdAt = now - 40 - idx,
-                        )
-                }
-            }
-        }
-
         return items
     }
 
@@ -285,7 +234,9 @@ class WallpaperRepository(
                 query = query,
                 categories = categoriesFlag,
                 colors = colorHex,
+                sorting = "views",
                 page = page,
+                order = "desc",
             )
         response.data.forEachIndexed { idx, wh ->
             val id = "wh_${wh.id}"
@@ -308,21 +259,7 @@ class WallpaperRepository(
         return result
     }
 
-    private suspend fun <T : Any> fetchOptional(
-        source: String,
-        fetch: suspend () -> T,
-    ): T? =
-        try {
-            fetch()
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (error: Exception) {
-            Log.w(TAG, "Failed to fetch $source wallpapers", error)
-            null
-        }
-
     private companion object {
-        const val TAG = "WallpaperRepository"
         const val WALLHAVEN_PAGE_SIZE = 24
     }
 

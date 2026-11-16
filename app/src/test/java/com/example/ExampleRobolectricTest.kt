@@ -11,10 +11,6 @@ import com.example.data.model.RotationPool
 import com.example.data.model.ThemeMode
 import com.example.data.model.WallpaperCategory
 import com.example.data.model.WallpaperTarget
-import com.example.data.remote.CatApi
-import com.example.data.remote.CatApiItem
-import com.example.data.remote.DogApi
-import com.example.data.remote.DogCeoResponse
 import com.example.data.remote.WallhavenApi
 import com.example.data.remote.WallhavenItem
 import com.example.data.remote.WallhavenResponse
@@ -68,16 +64,8 @@ class ExampleRobolectricTest {
                     colors: String?,
                     sorting: String,
                     page: Int,
+                    order: String,
                 ): WallhavenResponse = WallhavenResponse()
-            }
-        val fakeCat =
-            object : CatApi {
-                override suspend fun getRandomCats(limit: Int, mimeTypes: String): List<CatApiItem> =
-                    emptyList()
-            }
-        val fakeDog =
-            object : DogApi {
-                override suspend fun getRandomDogs(): DogCeoResponse = DogCeoResponse()
             }
 
         val repo =
@@ -85,9 +73,32 @@ class ExampleRobolectricTest {
                 context = context,
                 dao = db.wallpaperDao(),
                 wallhavenApi = fakeWallhaven,
-                catApi = fakeCat,
-                dogApi = fakeDog,
             )
+
+        db.wallpaperDao().upsertAll(
+            listOf(
+                WallpaperEntity(
+                    id = "cat_old_random",
+                    title = "Random cat",
+                    category = WallpaperCategory.PETS.name,
+                    previewUrl = "https://example.com/cat.jpg",
+                    fullImageUrl = "https://example.com/cat.jpg",
+                    localFilePath = null,
+                    drawableName = null,
+                    sourceLabel = "TheCatAPI Free",
+                ),
+                WallpaperEntity(
+                    id = "dog_old_random",
+                    title = "Random dog",
+                    category = WallpaperCategory.PETS.name,
+                    previewUrl = "https://example.com/dog.jpg",
+                    fullImageUrl = "https://example.com/dog.jpg",
+                    localFilePath = null,
+                    drawableName = null,
+                    sourceLabel = "DogCEO Free",
+                ),
+            ),
+        )
 
         repo.ensureSeeded()
         val all = repo.observeAllWallpapers().first()
@@ -118,18 +129,10 @@ class ExampleRobolectricTest {
                             colors: String?,
                             sorting: String,
                             page: Int,
+                            order: String,
                         ): WallhavenResponse {
                             throw IllegalStateException("Network unavailable")
                         }
-                    },
-                catApi =
-                    object : CatApi {
-                        override suspend fun getRandomCats(limit: Int, mimeTypes: String): List<CatApiItem> =
-                            emptyList()
-                    },
-                dogApi =
-                    object : DogApi {
-                        override suspend fun getRandomDogs(): DogCeoResponse = DogCeoResponse()
                     },
             )
 
@@ -175,13 +178,20 @@ class ExampleRobolectricTest {
                             colors: String?,
                             sorting: String,
                             page: Int,
+                            order: String,
                         ): WallhavenResponse {
                             val expectedCategory =
                                 expectedSearches.firstOrNull { it.second == query }?.third
                                     ?: if (query == "clouds") "100" else null
                             val expectedColor = if (query == "black") "000000" else null
                             val count = expectedCounts[query]
-                            if (categories != expectedCategory || colors != expectedColor || count == null) {
+                            if (
+                                categories != expectedCategory ||
+                                    colors != expectedColor ||
+                                    sorting != "views" ||
+                                    order != "desc" ||
+                                    count == null
+                            ) {
                                 return WallhavenResponse()
                             }
                             return WallhavenResponse(
@@ -199,15 +209,6 @@ class ExampleRobolectricTest {
                                     },
                             )
                         }
-                    },
-                catApi =
-                    object : CatApi {
-                        override suspend fun getRandomCats(limit: Int, mimeTypes: String): List<CatApiItem> =
-                            emptyList()
-                    },
-                dogApi =
-                    object : DogApi {
-                        override suspend fun getRandomDogs(): DogCeoResponse = DogCeoResponse()
                     },
             )
 
@@ -278,16 +279,8 @@ class ExampleRobolectricTest {
                             colors: String?,
                             sorting: String,
                             page: Int,
+                            order: String,
                         ): WallhavenResponse = WallhavenResponse()
-                    },
-                catApi =
-                    object : CatApi {
-                        override suspend fun getRandomCats(limit: Int, mimeTypes: String): List<CatApiItem> =
-                            emptyList()
-                    },
-                dogApi =
-                    object : DogApi {
-                        override suspend fun getRandomDogs(): DogCeoResponse = DogCeoResponse()
                     },
             )
 

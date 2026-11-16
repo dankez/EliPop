@@ -38,6 +38,9 @@ interface WallpaperDao {
     @Query("SELECT COUNT(*) FROM wallpapers")
     suspend fun countAll(): Int
 
+    @Query("DELETE FROM wallpapers WHERE sourceLabel IN ('TheCatAPI Free', 'DogCEO Free')")
+    suspend fun deleteLegacyRandomPetWallpapers()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(items: List<WallpaperEntity>)
 

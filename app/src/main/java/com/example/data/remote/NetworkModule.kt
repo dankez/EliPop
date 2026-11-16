@@ -39,6 +39,4 @@ object NetworkModule {
     }
 
     val wallhavenApi: WallhavenApi by lazy { retrofit.create(WallhavenApi::class.java) }
-    val catApi: CatApi by lazy { retrofit.create(CatApi::class.java) }
-    val dogApi: DogApi by lazy { retrofit.create(DogApi::class.java) }
 }
