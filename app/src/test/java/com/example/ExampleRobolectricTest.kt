@@ -16,7 +16,9 @@ import com.example.data.remote.CatApiItem
 import com.example.data.remote.DogApi
 import com.example.data.remote.DogCeoResponse
 import com.example.data.remote.WallhavenApi
+import com.example.data.remote.WallhavenItem
 import com.example.data.remote.WallhavenResponse
+import com.example.data.remote.WallhavenThumbs
 import com.example.data.repository.WallpaperRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -134,6 +136,92 @@ class ExampleRobolectricTest {
         val result = repo.refreshCategoryFromOnlineBank(WallpaperCategory.NATURE)
 
         assertTrue(result.isFailure)
+    }
+
+    @Test
+    fun `wallhaven fills every category with a full result set`() = runTest {
+        val expectedSearches =
+            listOf(
+                Triple(WallpaperCategory.KAWAII, "kawaii anime", "010"),
+                Triple(WallpaperCategory.BLACK_GIRLY, "black", "100"),
+                Triple(WallpaperCategory.COQUETTE, "bow", "100"),
+                Triple(WallpaperCategory.PETS, "cute", "100"),
+                Triple(WallpaperCategory.NATURE, "nature", "100"),
+                Triple(WallpaperCategory.FLOWERS, "flowers", "100"),
+                Triple(WallpaperCategory.PASTEL, "pastel", "100"),
+            )
+        val expectedCounts =
+            mapOf(
+                "kawaii anime" to 24,
+                "black" to 24,
+                "bow" to 24,
+                "cute" to 24,
+                "nature" to 24,
+                "flowers" to 24,
+                "pastel" to 8,
+                "clouds" to 24,
+            )
+        val repo =
+            WallpaperRepository(
+                context = context,
+                dao = db.wallpaperDao(),
+                wallhavenApi =
+                    object : WallhavenApi {
+                        override suspend fun searchWallpapers(
+                            query: String,
+                            categories: String,
+                            purity: String,
+                            ratios: String,
+                            colors: String?,
+                            sorting: String,
+                            page: Int,
+                        ): WallhavenResponse {
+                            val expectedCategory =
+                                expectedSearches.firstOrNull { it.second == query }?.third
+                                    ?: if (query == "clouds") "100" else null
+                            val expectedColor = if (query == "black") "000000" else null
+                            val count = expectedCounts[query]
+                            if (categories != expectedCategory || colors != expectedColor || count == null) {
+                                return WallhavenResponse()
+                            }
+                            return WallhavenResponse(
+                                data =
+                                    (1..count).map { index ->
+                                        WallhavenItem(
+                                            id = "${query.replace(' ', '_')}_$index",
+                                            path = "https://example.com/${query.replace(' ', '_')}_$index.jpg",
+                                            thumbs =
+                                                WallhavenThumbs(
+                                                    large =
+                                                        "https://example.com/${query.replace(' ', '_')}_$index-thumb.jpg",
+                                                ),
+                                        )
+                                    },
+                            )
+                        }
+                    },
+                catApi =
+                    object : CatApi {
+                        override suspend fun getRandomCats(limit: Int, mimeTypes: String): List<CatApiItem> =
+                            emptyList()
+                    },
+                dogApi =
+                    object : DogApi {
+                        override suspend fun getRandomDogs(): DogCeoResponse = DogCeoResponse()
+                    },
+            )
+
+        expectedSearches.forEach { (category, _, _) ->
+            val result = repo.refreshCategoryFromOnlineBank(category)
+            val expectedCount = if (category == WallpaperCategory.PASTEL) 32 else 24
+            assertTrue(result.isSuccess)
+            assertEquals(category.name, expectedCount, result.getOrThrow())
+            assertEquals(
+                category.name,
+                expectedCount,
+                db.wallpaperDao().getByCategoryOnce(category.name).size,
+            )
+        }
     }
 
     @Test

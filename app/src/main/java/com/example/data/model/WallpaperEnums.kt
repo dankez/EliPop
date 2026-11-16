@@ -7,15 +7,16 @@ enum class WallpaperCategory(
     val searchQuery: String,
     val wallhavenCategories: String = "100",
     val isFetchableOnline: Boolean = true,
+    val fallbackSearchQueries: List<String> = emptyList(),
 ) {
     ALL("Všetko", "", "110", isFetchableOnline = false),
-    KAWAII("Kawaii & Anime", "kawaii anime cute pastel chibi", "010", isFetchableOnline = true),
-    BLACK_GIRLY("Black Girly", "black butterfly glitter dark aesthetic", "100", isFetchableOnline = true),
-    COQUETTE("Coquette", "coquette pink bow ribbon pearls aesthetic", "100", isFetchableOnline = true),
-    PETS("Zvieratká", "cute kitten puppy bunny aesthetic", "100", isFetchableOnline = true),
-    NATURE("Príroda", "cherry blossom pastel meadow nature", "100", isFetchableOnline = true),
-    FLOWERS("Kvety", "pink peony rose flowers aesthetic", "100", isFetchableOnline = true),
-    PASTEL("Pastel", "pastel aesthetic clouds pink lavender", "100", isFetchableOnline = true),
+    KAWAII("Kawaii & Anime", "kawaii anime", "010"),
+    BLACK_GIRLY("Black Girly", "black", "100"),
+    COQUETTE("Coquette", "bow", "100"),
+    PETS("Zvieratká", "cute", "100"),
+    NATURE("Príroda", "nature", "100"),
+    FLOWERS("Kvety", "flowers", "100"),
+    PASTEL("Pastel", "pastel", "100", fallbackSearchQueries = listOf("clouds")),
     CUSTOM("Moje", "", "100", isFetchableOnline = false);
 
     companion object {

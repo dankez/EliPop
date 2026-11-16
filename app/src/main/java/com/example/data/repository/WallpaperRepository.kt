@@ -193,7 +193,7 @@ class WallpaperRepository(
         val items = mutableListOf<WallpaperEntity>()
         val colorFilter = if (category == WallpaperCategory.BLACK_GIRLY) "000000" else null
 
-        items +=
+        val primaryItems =
             fetchWallhavenQuery(
                 query = category.searchQuery,
                 categoriesFlag = category.wallhavenCategories,
@@ -203,6 +203,23 @@ class WallpaperRepository(
                 favoriteIds = favoriteIds,
                 now = now,
             )
+        items += primaryItems
+
+        if (primaryItems.size < WALLHAVEN_PAGE_SIZE) {
+            for (fallbackQuery in category.fallbackSearchQueries) {
+                items +=
+                    fetchWallhavenQuery(
+                        query = fallbackQuery,
+                        categoriesFlag = category.wallhavenCategories,
+                        assignCategory = category,
+                        colorHex = colorFilter,
+                        page = page,
+                        favoriteIds = favoriteIds,
+                        now = now,
+                    )
+                if (items.distinctBy { it.id }.size >= WALLHAVEN_PAGE_SIZE) break
+            }
+        }
 
         if (category == WallpaperCategory.PETS) {
             coroutineScope {
@@ -270,7 +287,7 @@ class WallpaperRepository(
                 colors = colorHex,
                 page = page,
             )
-        response.data.take(8).forEachIndexed { idx, wh ->
+        response.data.forEachIndexed { idx, wh ->
             val id = "wh_${wh.id}"
             result +=
                 WallpaperEntity(
@@ -306,6 +323,7 @@ class WallpaperRepository(
 
     private companion object {
         const val TAG = "WallpaperRepository"
+        const val WALLHAVEN_PAGE_SIZE = 24
     }
 
     suspend fun importUserWallpapers(uris: List<Uri>): Result<List<WallpaperItem>> =
