@@ -1,0 +1,6 @@
+{
+  "name": "EliPop",
+  "description": "EliPop: Cute Girly Wallpapers — jemné dievčenské tapety s AI generátorom, DIY editorom, živými efektmi, automatickým striedaním pri odomknutí, vlastnou galériou a tmavým režimom.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

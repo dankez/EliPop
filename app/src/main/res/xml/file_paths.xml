@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <files-path name="user_wallpapers" path="user_wallpapers/" />
+    <cache-path name="wallpaper_downloads" path="wallpaper_downloads/" />
+    <cache-path name="shared_wallpapers" path="shared_wallpapers/" />
+</paths>

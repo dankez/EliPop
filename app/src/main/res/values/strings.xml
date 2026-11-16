@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">EliPop</string>
+    <string name="nav_discover">Galéria</string>
+    <string name="nav_favorites">Obľúbené</string>
+    <string name="nav_automation">Automatika</string>
+    <string name="nav_ai_studio">AI Štúdio</string>
+    <string name="nav_settings">Vzhľad</string>
+    <string name="hero_subtitle">Jemné pozadia pre tvoju obrazovku</string>
+    <string name="action_add_from_gallery">Pridať z galérie</string>
+    <string name="action_set_wallpaper">Nastaviť tapetu</string>
+    <string name="action_rotate_now">Vymeniť teraz</string>
+    <string name="action_refresh_bank">Načítať ďalšie</string>
+    <string name="target_home">Domovská plocha</string>
+    <string name="target_lock">Zamknutá plocha</string>
+    <string name="target_both">Obe plochy</string>
+    <string name="notification_channel_name">Automatická zmena tapiet</string>
+    <string name="notification_channel_desc">Udržuje automatické striedanie tapiet pri odomknutí telefónu</string>
+    <string name="notification_unlock_title">EliPop je aktívna</string>
+    <string name="notification_unlock_text">Nová tapeta sa nastaví pri každom odomknutí telefónu</string>
+    <string name="live_wallpaper_name">EliPop Živé Pozadie</string>
+    <string name="live_wallpaper_desc">Jemné padajúce sakurové lupene, trblietky alebo srdiečka na tvojej tapete</string>
+</resources>
