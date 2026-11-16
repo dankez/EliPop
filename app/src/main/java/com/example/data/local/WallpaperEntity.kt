@@ -1,11 +1,19 @@
 package com.example.data.local
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.data.model.WallpaperCategory
 import com.example.data.model.WallpaperItem
 
-@Entity(tableName = "wallpapers")
+@Entity(
+    tableName = "wallpapers",
+    indices = [
+        Index(value = ["isFavorite", "createdAt"], name = "index_wallpapers_isFavorite_createdAt"),
+        Index(value = ["category", "createdAt"], name = "index_wallpapers_category_createdAt"),
+        Index(value = ["isUserUploaded", "createdAt"], name = "index_wallpapers_isUserUploaded_createdAt"),
+    ],
+)
 data class WallpaperEntity(
     @PrimaryKey val id: String,
     val title: String,

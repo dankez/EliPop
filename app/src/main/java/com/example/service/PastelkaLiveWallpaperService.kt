@@ -102,6 +102,7 @@ class PastelkaLiveWallpaperService : WallpaperService() {
             handler.removeCallbacks(drawRunnable)
             prefsJob?.cancel()
             engineScope.cancel()
+            backgroundBitmap = null
             super.onDestroy()
         }
 

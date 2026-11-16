@@ -43,6 +43,16 @@ fun WallpaperAsyncImage(
             }
         }
 
+    val imageRequest =
+        remember(context, model) {
+            model?.let {
+                ImageRequest.Builder(context)
+                    .data(it)
+                    .crossfade(true)
+                    .build()
+            }
+        }
+
     val placeholderGradient =
         Brush.linearGradient(
             colors =
@@ -53,13 +63,9 @@ fun WallpaperAsyncImage(
         )
 
     Box(modifier = modifier.background(placeholderGradient)) {
-        if (model != null) {
+        if (imageRequest != null) {
             AsyncImage(
-                model =
-                    ImageRequest.Builder(context)
-                        .data(model)
-                        .crossfade(true)
-                        .build(),
+                model = imageRequest,
                 contentDescription = contentDescription,
                 contentScale = contentScale,
                 modifier = Modifier.fillMaxSize(),

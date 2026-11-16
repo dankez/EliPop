@@ -101,6 +101,42 @@ class ExampleRobolectricTest {
     }
 
     @Test
+    fun `wallhaven failure is returned to caller`() = runTest {
+        val repo =
+            WallpaperRepository(
+                context = context,
+                dao = db.wallpaperDao(),
+                wallhavenApi =
+                    object : WallhavenApi {
+                        override suspend fun searchWallpapers(
+                            query: String,
+                            categories: String,
+                            purity: String,
+                            ratios: String,
+                            colors: String?,
+                            sorting: String,
+                            page: Int,
+                        ): WallhavenResponse {
+                            throw IllegalStateException("Network unavailable")
+                        }
+                    },
+                catApi =
+                    object : CatApi {
+                        override suspend fun getRandomCats(limit: Int, mimeTypes: String): List<CatApiItem> =
+                            emptyList()
+                    },
+                dogApi =
+                    object : DogApi {
+                        override suspend fun getRandomDogs(): DogCeoResponse = DogCeoResponse()
+                    },
+            )
+
+        val result = repo.refreshCategoryFromOnlineBank(WallpaperCategory.NATURE)
+
+        assertTrue(result.isFailure)
+    }
+
+    @Test
     fun `rotation candidate respects pool and avoids immediate repeat`() = runTest {
         val dao = db.wallpaperDao()
         dao.upsertAll(
